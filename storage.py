@@ -13,39 +13,40 @@ class SQLiteDatabaseConnect:
                     title VARCHAR(100) NOT NULL,
                     author VARCHAR(50) NOT NULL,
                     description TEXT NOT NULL,
+                    article_image TEXT NOT NULL,
                     creation_date VARCHAR(50) NOT NULL
                 )
             """
             cursor.execute(query)
             connection.commit()
 
-    def add_record(self, *, title: str, author: str, description: str):
+    def add_post(self, *, title: str, author: str, description: str, article_image: str):
         with sqlite3.connect(self.database_name) as connection:
             cursor = connection.cursor()
-            values = [title, author, description, datetime.now().strftime('%Y-%m-%d %H:%M')]
+            creation_date = datetime.now().strftime('%Y-%m-%d %H:%M')
+            values = [title, author, description, article_image, creation_date]
             query = """
-                INSERT INTO records(title, author, description, creation_date)
-                VALUES(?, ?, ?, ?)
+                INSERT INTO records(title, author, description, article_image, creation_date)
+                VALUES(?, ?, ?, ?, ?)
             """
             cursor.execute(query, values)
             connection.commit()
 
-    def get_limited_records(self, limit: int = 1000):
+    def get_posts(self, limit: int = 5):
         with sqlite3.connect(self.database_name) as connection:
             cursor = connection.cursor()
-            values = [limit, ]
             query = """
-                SELECT id, title, author, description, creation_date FROM records
+                SELECT id, title, author, description, article_image, creation_date FROM records
                 ORDER BY id DESC
-                LIMIT ?
+                LIMIT :limit_value
             """
-            result = cursor.execute(query, values).fetchall()
+            result = cursor.execute(query, {'limit_value': limit}).fetchall()
             return result
 
-    def get_record_by_search(self, query_str: str):
+    def get_posts_by_search(self, search_field: str = ''):
         with sqlite3.connect(self.database_name) as connection:
             cursor = connection.cursor()
-            search_string = '%' + query_str + '%'
+            search_string = '%' + search_field + '%'
             query = """
                 SELECT *
                 FROM records
@@ -60,5 +61,17 @@ class SQLiteDatabaseConnect:
             result = cursor.execute(query, {'search': search_string})
             return result.fetchall()
 
+    def get_posts_by_author(self, author: str = ''):
+        with sqlite3.connect(self.database_name) as connection:
+            cursor = connection.cursor()
+            query = """
+                SELECT *
+                FROM records
+                WHERE author LIKE :author
+                ORDER BY id DESC
+            """
+            result = cursor.execute(query, {'author': author})
+            return result.fetchall()
 
-database = SQLiteDatabaseConnect('my_records.sqlite3')
+
+database = SQLiteDatabaseConnect('my_stories.sqlite3')

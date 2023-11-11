@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+    <table class="table">
+        <tbody>
+        <tr>
+            <td align="center">{{ title }}</td>
+        </tr>
+        {% for post in posts %}
+            <tr>
+                <td>
+                    <h2>{{ post.title }}</h2><br>
+                    Published at: {{ post.creation_date }} by <a href="/author/{{ post.author }}">{{ post.author }}</a><br>
+                    <img src="{{ post.article_image }}" width="200" alt="" class="indented-image float-start ">
+                    <p class="indented-text">{{ post.description }}</p>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
